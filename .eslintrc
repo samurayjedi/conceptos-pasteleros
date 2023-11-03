@@ -1,0 +1,72 @@
+{
+  "parser": "@babel/eslint-parser",
+  "plugins": ["react", "prettier"],
+  "extends": [
+    "@emotion", // must be firsts
+    "airbnb",
+    "airbnb/hooks",
+    "prettier",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "@emotion/pkg-renaming": "error",
+    "@emotion/no-vanilla": "error",
+    "@emotion/import-from-emotion": "error",
+    "@emotion/styled-import": "error",
+    "@emotion/syntax-preference": [2, "object"],
+    // @emotion, fix css unknown property for css prop
+    "react/no-unknown-property": ["error", { "ignore": ["css"] }],
+    // prettier
+    "prettier/prettier": "error",
+    // ....
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-props-no-spreading": "off",
+    "react/style-prop-object": "off",
+    "react/require-default-props": "off",
+    "no-use-before-define": "off",
+    "react-hooks/exhaustive-deps": "warn",
+    "camelcase": "off",
+    "no-continue": "off",
+    "func-names": "off",
+    "no-nested-ternary": "off",
+    "no-plusplus": "off",
+    "import/prefer-default-export": "off",
+    "no-case-declarations": "off",
+    "default-case": "off",
+    "no-multi-assign": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ],
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [".ts", ".tsx"]
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
+    }
+  },
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ]
+    }
+  ]
+}
