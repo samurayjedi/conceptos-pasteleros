@@ -11,19 +11,17 @@ import {
   View,
   ViewProps,
   TouchableWithoutFeedback,
-  Text,
   TouchableWithoutFeedbackProps,
 } from 'react-native';
 import Svg, { Path, SvgProps } from 'react-native-svg';
 import Constants from 'expo-constants';
 import ShapeOverlays from '.';
-import Button from '../../material/Button';
-import IconButton, { IconButtonProps } from '../../material/IconButton';
-import { animated, useSpring } from '@react-spring/native';
+import IconButton from '../../material/IconButton';
 
 const Drawer = React.forwardRef<DrawerInterface, ViewProps>((props, ref) => {
   const overlayRef = useRef<OverlayInterface>(null);
   const [open, setOpen] = useState(false);
+  const [display, setDisplay] = useState(false);
 
   const toggle = useCallback(() => {
     if (overlayRef.current && !overlayRef.current.overlays.isAnimating) {
@@ -36,10 +34,14 @@ const Drawer = React.forwardRef<DrawerInterface, ViewProps>((props, ref) => {
     toggle,
   }));
 
+  const onOpen = useCallback(() => setDisplay(true), []);
+
+  const onClose = useCallback(() => setDisplay(false), []);
+
   return (
-    <Root>
+    <Root display={display}>
       <Wrapper>
-        <PiwiOverlay ref={overlayRef} />
+        <PiwiOverlay ref={overlayRef} onOpen={onOpen} onClose={onClose} />
         {open && (
           <Content>
             <IconButton onPress={toggle} style={{ alignSelf: 'flex-start' }}>
@@ -60,31 +62,35 @@ const Drawer = React.forwardRef<DrawerInterface, ViewProps>((props, ref) => {
 
 export default Drawer;
 
-const PiwiOverlay = React.forwardRef<OverlayInterface, {}>((props, ref) => {
-  const [d1, setD1] = useState('');
-  const [d2, setD2] = useState('');
-  const [d3, setD3] = useState('');
+const PiwiOverlay = React.forwardRef<OverlayInterface, OverlayProps>(
+  ({ onClose = () => {}, onOpen = () => {} }, ref) => {
+    const [d1, setD1] = useState('');
+    const [d2, setD2] = useState('');
+    const [d3, setD3] = useState('');
 
-  const overlays = useMemo(
-    () =>
-      new ShapeOverlays({
-        setD: [setD1, setD2, setD3],
-      }),
-    [],
-  );
+    const overlays = useMemo(
+      () =>
+        new ShapeOverlays({
+          setD: [setD1, setD2, setD3],
+          onOpen,
+          onClose,
+        }),
+      [onClose],
+    );
 
-  useImperativeHandle(ref, () => ({
-    overlays,
-  }));
+    useImperativeHandle(ref, () => ({
+      overlays,
+    }));
 
-  return (
-    <Overlay viewBox="0 0 100 100" preserveAspectRatio="none">
-      <Path fill="#f26c20" d={d1} />
-      <Path fill="#f09f7a" d={d2} />
-      <Path fill="#243c86" d={d3} />
-    </Overlay>
-  );
-});
+    return (
+      <Overlay viewBox="0 0 100 100" preserveAspectRatio="none">
+        <Path fill="#f26c20" d={d1} />
+        <Path fill="#f09f7a" d={d2} />
+        <Path fill="#243c86" d={d3} />
+      </Overlay>
+    );
+  },
+);
 
 function Item({ children, ...props }: TouchableWithoutFeedbackProps) {
   return (
@@ -94,8 +100,8 @@ function Item({ children, ...props }: TouchableWithoutFeedbackProps) {
   );
 }
 
-const Root = styled.View({
-  display: 'flex',
+const Root = styled.View<{ display: boolean }>(({ display }) => ({
+  display: display ? 'flex' : 'none',
   position: 'absolute',
   width: '100%',
   height: '100%',
@@ -103,7 +109,7 @@ const Root = styled.View({
   left: 0,
   zIndex: 997,
   elevation: 997,
-});
+}));
 
 const Wrapper = styled.View({
   position: 'relative',
@@ -134,6 +140,11 @@ const Overlay = styled(Svg)({
 
 export interface DrawerInterface {
   toggle: () => void;
+}
+
+interface OverlayProps {
+  onOpen?: () => void;
+  onClose?: () => void;
 }
 
 interface OverlayInterface {

@@ -70,6 +70,7 @@ const PIWI_THEME = {
       opacity: 0.22,
     },
     paper: '#ffffff',
+    divider: 'rgba(0, 0, 0, 0.12)',
   },
   spacing: (piwi: number) => piwi * 8,
   iconButton: {

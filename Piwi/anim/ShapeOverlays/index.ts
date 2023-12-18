@@ -39,6 +39,7 @@ export default class ShapeOverlays {
     this.timeStart = Date.now();
     if (!this.isOpened) {
       this.isOpened = true;
+      this.controller.onOpen();
     } else {
       this.isOpened = false;
     }
@@ -110,10 +111,15 @@ export default class ShapeOverlays {
       });
     } else {
       this.isAnimating = false;
+      if (!this.isOpened) {
+        this.controller.onClose();
+      }
     }
   }
 }
 
 interface DrawerController {
   setD: React.Dispatch<React.SetStateAction<string>>[];
+  onOpen: () => void;
+  onClose: () => void;
 }

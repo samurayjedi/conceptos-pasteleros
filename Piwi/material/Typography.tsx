@@ -10,7 +10,14 @@ export default React.forwardRef<Text, TypographyProps>((props, ref) => (
 ));
 
 const PiwiText = styled.Text<TypographyProps>(
-  ({ theme, align = 'left', color, gutterBottom, variant = 'body1' }) => ({
+  ({
+    theme,
+    align = 'left',
+    color,
+    gutterBottom,
+    variant = 'body1',
+    fontWeight = '100',
+  }) => ({
     ...theme.typography[variant],
     fontFamily: 'Roboto',
     textAlign: align,
@@ -28,6 +35,7 @@ const PiwiText = styled.Text<TypographyProps>(
       }
     })(),
     marginBottom: gutterBottom ? theme.spacing(1) : 0,
+    fontWeight,
   }),
 );
 
@@ -46,4 +54,15 @@ export interface TypographyProps extends TextProps {
   align?: 'auto' | 'center' | 'justify' | 'left' | 'right';
   gutterBottom?: boolean;
   children: React.ReactNode;
+  fontWeight?:
+    | 'bold'
+    | '100'
+    | '200'
+    | '300'
+    | '400'
+    | '500'
+    | '600'
+    | '700'
+    | '800'
+    | '900';
 }

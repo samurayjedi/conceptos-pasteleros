@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import styled from '@emotion/native';
 import { View } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useAppSelector } from './hooks';
 import AppBar from '../Piwi/material/AppBar';
 import Toolbar from '../Piwi/material/Toolbar';
 import IconButton from '../Piwi/material/IconButton';
@@ -10,6 +11,7 @@ import Typography from '../Piwi/material/Typography';
 import Drawer, { DrawerInterface } from '../Piwi/anim/ShapeOverlays/Drawer';
 
 export default function ConceptosAppBar() {
+  const Piwi = useAppSelector(useCallback((state) => state.appbar.content, []));
   const drawerRef = useRef<DrawerInterface>(null);
 
   const handleOpenDrawer = useCallback(() => {
@@ -22,18 +24,27 @@ export default function ConceptosAppBar() {
     <>
       <StatusBar style="light" />
       <Drawer ref={drawerRef} />
-      <PiwiAppBar>
+      <PiwiAppBar color={Piwi ? 'secondary' : 'primary'}>
         <Toolbar>
-          <IconButton color="#ffffff" onPress={handleOpenDrawer}>
-            <FontAwesome name="bars" />
-          </IconButton>
-          <Typography variant="h6" style={{ color: 'white' }}>
-            Conceptos
-          </Typography>
-          <View style={{ flex: 1 }} />
-          <IconButton color="#ffffff">
-            <FontAwesome name="bell-o" />
-          </IconButton>
+          {Piwi ? (
+            <Piwi.el {...Piwi.props} />
+          ) : (
+            <>
+              <IconButton color="#ffffff" onPress={handleOpenDrawer}>
+                <FontAwesome name="bars" />
+              </IconButton>
+              <Typography variant="h6" style={{ color: 'white' }}>
+                Conceptos
+              </Typography>
+              <View style={{ flex: 1 }} />
+              <IconButton color="#ffffff">
+                <FontAwesome name="bell-o" />
+              </IconButton>
+              <IconButton color="#ffffff">
+                <FontAwesome name="user-circle" />
+              </IconButton>
+            </>
+          )}
         </Toolbar>
       </PiwiAppBar>
     </>
