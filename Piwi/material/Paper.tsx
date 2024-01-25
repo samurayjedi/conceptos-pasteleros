@@ -1,7 +1,7 @@
-import { ViewProps } from 'react-native';
+import { View, ViewProps } from 'react-native';
 import styled from '@emotion/native';
 
-export default function Paper({ children, ...props }: ViewProps) {
+export default function Paper({ children, ...props }: ViewProps & { ref?: React.Ref<View> }) {
   return <PiwiPaper {...props}>{children}</PiwiPaper>;
 }
 

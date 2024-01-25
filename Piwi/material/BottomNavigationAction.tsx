@@ -1,11 +1,13 @@
 import { useContext } from 'react';
-import { TouchableWithoutFeedbackProps } from 'react-native';
+import {
+  TouchableWithoutFeedback,
+  TouchableWithoutFeedbackProps,
+} from 'react-native';
 import _ from 'lodash';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Typography from './Typography';
-import Ripple from '../root/Ripple';
 import { BOTTOMNAVIGATION_CONTEXT } from './BottomNavigation';
 
 export default function BottomNavigationAction(piwi: BottomNavigationAction) {
@@ -15,22 +17,21 @@ export default function BottomNavigationAction(piwi: BottomNavigationAction) {
     label,
     icon,
     color = 'primary',
+    textColor = theme.palette.text.secondary,
     showLabel = false,
     active = false,
     children, // never used!!!
     ...props
-  } = { ...piwi, ...ctx };
+  } = { ...ctx, ...piwi };
 
   return (
     <Root>
-      <Ripple {...props}>
+      <TouchableWithoutFeedback {...props}>
         <Wrapper>
           <Icon
             name={icon}
             size={22}
-            color={
-              active ? theme.palette[color].main : theme.palette.text.secondary
-            }
+            color={active ? theme.palette[color].main : textColor}
           />
           {showLabel && (
             <Typography
@@ -41,7 +42,7 @@ export default function BottomNavigationAction(piwi: BottomNavigationAction) {
             </Typography>
           )}
         </Wrapper>
-      </Ripple>
+      </TouchableWithoutFeedback>
     </Root>
   );
 }

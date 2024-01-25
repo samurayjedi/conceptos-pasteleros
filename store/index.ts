@@ -1,9 +1,9 @@
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
-import appbar from './appbar';
+import recipe from './recipe';
 
 const store = configureStore({
   reducer: {
-    appbar,
+    recipe,
   },
   devTools: true,
 });

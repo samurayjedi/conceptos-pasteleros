@@ -1,99 +1,106 @@
-import React, { useCallback } from 'react';
-import {
-  View,
-  Image,
-  ImageSourcePropType,
-  TouchableWithoutFeedback,
-} from 'react-native';
+import React, { useContext, useMemo } from 'react';
+import _ from 'lodash';
+import { Category, Recipe } from '../../store/recipe';
+import { usePage } from '../../lib/Inertia';
+import { Image, View } from 'react-native';
 import { useTheme } from '@emotion/react';
 import styled from '@emotion/native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useAppDispatch } from '../../src/hooks';
-import { changeContent } from '../../store/appbar';
 import Typography from '../../Piwi/material/Typography';
 import { parseThousands } from '../../Piwi/root/utils';
+import { CtxAppBar } from '../../src/ConceptosAppBar';
+import { CtxLayout } from '../../App';
 import Crown from '../../Piwi/icons/crown';
 import IconButton from '../../Piwi/material/IconButton';
+import RecipeAppBar from './Recipe/RecipeAppBar';
+import { useAppSelector } from '../../src/hooks';
+import { SERVER } from '../../src/Vars';
 
-export default function Entry({
-  onOpen = () => {},
-  onClose = () => {},
-  ...props
-}: EntryProps) {
-  const {
-    image,
-    title,
-    author,
-    rating,
-    views,
-    categories,
+export const ENTRY_HEIGHT = 90;
+export default React.memo(
+  ({
+    index,
     borderBottom = true,
-    isPremium = false,
-    price,
-  } = props;
-  const theme = useTheme();
-  const dispatch = useAppDispatch();
+    onOpen = () => {},
+    onClose = () => {},
+  }: EntryProps) => {
+    const category = useAppSelector(
+      (state) => state.recipe.openedRecipeCategory,
+    );
+    const collections = usePage().props as unknown as {
+      basics: Recipe[];
+      classics: Recipe[];
+      gourmet: Recipe[];
+    };
+    const indexTemp = useMemo(() => index, []);
+    const recipe = collections[category][indexTemp];
+    const theme = useTheme();
+    const { setAppBar } = useContext(CtxAppBar);
+    const { setBackground } = useContext(CtxLayout);
 
-  const onPressIn = useCallback(() => {
-    dispatch(changeContent({ el: EntryAppBar, props: { title, onClose } }));
-    onOpen(props);
-  }, [props]);
-
-  return (
-    <EntryRoot borderBottom={borderBottom}>
-      <EntryImage source={image} />
-      <EntryContent>
-        <Typography variant="h5" color="secondary" fontWeight="bold">
-          {title}
-        </Typography>
-        <Typography variant="subtitle1" color="textSecondary" fontWeight="bold">
-          {author}
-        </Typography>
-        <Metrics>
-          {isPremium && (
-            <PiwiMetric>
-              <CrownIcon color={theme.palette.secondary.main} />
-              <Typography variant="subtitle2">{price}$</Typography>
-            </PiwiMetric>
-          )}
-          <Metric icon="eye" label={parseThousands(views)} />
-          <Metric icon="star" label={String(rating)} />
-          <Categories categories={categories} />
-        </Metrics>
-      </EntryContent>
-      <Actions>
-        <IconButton onPressIn={onPressIn}>
-          <FontAwesome name="sign-in" />
-        </IconButton>
-      </Actions>
-    </EntryRoot>
-  );
-}
-
-function EntryAppBar({
-  title,
-  onClose,
-}: {
-  title: string;
-  onClose: NonNullable<EntryProps['onClose']>;
-}) {
-  const dispatch = useAppDispatch();
-  const back = useCallback(() => {
-    dispatch(changeContent(null));
-    onClose();
-  }, []);
-
-  return (
-    <>
-      <IconButton color="#ffffff" onPress={back}>
-        <FontAwesome name="arrow-left" />
-      </IconButton>
-      <Typography variant="h6" style={{ color: 'white' }}>
-        {title}
-      </Typography>
-    </>
-  );
-}
+    return (
+      <EntryRoot borderBottom={borderBottom}>
+        <EntryImage
+          source={{
+            uri: `${SERVER}/getimage/image/${encodeURI(recipe.cover)}`,
+          }}
+        />
+        <EntryContent>
+          <Typography variant="subtitle1" color="secondary">
+            {recipe.name}
+          </Typography>
+          <View style={{ flexDirection: 'row' }}>
+            <View>
+              <Typography
+                variant="subtitle2"
+                color="textSecondary"
+                fontWeight="bold"
+              >
+                Fernando Teran
+              </Typography>
+              <Metrics>
+                {parseInt(recipe.premium, 10) === 1
+                  ? true
+                  : false && (
+                      <PiwiMetric>
+                        <CrownIcon color={theme.palette.secondary.main} />
+                        <Typography variant="subtitle2">
+                          {recipe.cost}$
+                        </Typography>
+                      </PiwiMetric>
+                    )}
+                <Metric icon="eye" label={parseThousands(1000)} />
+                <Metric icon="star" label="5" />
+                <Categories
+                  categories={recipe.categories.map(
+                    (category) => category.label,
+                  )}
+                />
+              </Metrics>
+            </View>
+            <View style={{ flex: 1 }} />
+            <IconButton
+              onPressIn={() => {
+                setBackground(theme.palette.secondary.main);
+                setAppBar({
+                  el: RecipeAppBar,
+                  props: {
+                    name: recipe.name,
+                    onClose,
+                  },
+                });
+                onOpen(index);
+              }}
+            >
+              <FontAwesome name="sign-in" />
+            </IconButton>
+          </View>
+        </EntryContent>
+      </EntryRoot>
+    );
+  },
+  _.isEqual,
+);
 
 const EntryRoot = styled.View<{ borderBottom: boolean }>(
   ({ theme, borderBottom }) => ({
@@ -106,17 +113,22 @@ const EntryRoot = styled.View<{ borderBottom: boolean }>(
       borderBottomColor: theme.palette.divider,
       paddingBottom: theme.spacing(1),
     }),
+    alignItems: 'center',
+    height: ENTRY_HEIGHT,
+    overflow: 'hidden',
   }),
 );
 
-const EntryImage = styled(Image)({
-  width: 70,
-  height: 70,
+const EntryImage = styled(Image)(({ theme }) => ({
+  width: 80,
+  height: 80,
   objectFit: 'cover',
-  borderRadius: 5,
-});
+  borderRadius: 200,
+  marginRight: 5,
+}));
 
 const EntryContent = styled.View(({ theme }) => ({
+  flex: 1,
   paddingRight: theme.spacing(1),
   paddingLeft: 12,
   paddingBottom: theme.spacing(1),
@@ -142,12 +154,6 @@ const CrownIcon = styled(Crown)({
   paddingRight: 3,
 });
 
-const Actions = styled.View({
-  flex: 1,
-  alignItems: 'flex-end',
-  justifyContent: 'center',
-});
-
 function Metric({ icon, label }: MetricProps) {
   const theme = useTheme();
   return (
@@ -168,20 +174,10 @@ function Categories({ categories }: { categories: string[] }) {
 
 export interface EntryProps {
   index: number;
-  image: ImageSourcePropType;
-  title: string;
-  author: string;
-  isPremium?: boolean;
-  price?: number;
-  rating: number;
-  views: number;
-  categories: string[];
   borderBottom?: boolean;
-  onOpen?: (entry: EntryOpenEv) => void;
+  onOpen?: (index: number) => void;
   onClose?: () => void;
 }
-
-export type EntryOpenEv = Omit<EntryProps, 'onOpen' | 'onClose'>;
 
 interface MetricProps {
   icon: React.ComponentProps<typeof FontAwesome>['name'];

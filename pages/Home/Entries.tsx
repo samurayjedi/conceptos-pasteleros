@@ -1,76 +1,34 @@
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import styled from '@emotion/native';
 import _ from 'lodash';
-import { useAssets } from 'expo-asset';
-import { View, ScrollView } from 'react-native';
+import { View, ViewProps, FlatList, ListRenderItem } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { CTX } from '.';
+import { useAppDispatch, useAppSelector } from '../../src/hooks';
+import { usePage } from '../../lib/Inertia';
+import {
+  openedRecipeCategory,
+  Category,
+  Recipe,
+  openedRecipe,
+} from '../../store/recipe';
 import FormControl from '../../Piwi/material/FormControl';
 import OutlinedInput from '../../Piwi/material/OutlinedInput';
 import IconButton from '../../Piwi/material/IconButton';
-import Entry, { EntryProps } from './Entry';
+import Entry, { ENTRY_HEIGHT } from './Entry';
 import Paper from '../../Piwi/material/Paper';
 import Button from '../../Piwi/material/Button';
 
-export default function Entries() {
-  const { setActiveEntry } = useContext(CTX);
-  const [assets] = useAssets([
-    require('../../assets/test1.jpg'),
-    require('../../assets/test2.jpg'),
-    require('../../assets/test3.jpg'),
-    require('../../assets/test4.jpg'),
-    require('../../assets/test5.jpg'),
-    require('../../assets/test6.jpg'),
-  ]);
-  const data: Omit<EntryProps, 'onOpen' | 'onClose' | 'image' | 'index'>[] = [
-    {
-      title: 'Tarta de Fresa',
-      author: 'Por: Fernando Teran',
-      rating: 4.7,
-      views: 2200,
-      categories: ['Básicas'],
-    },
-    {
-      title: 'Pastel de Queso',
-      author: 'Por: Fernando Teran',
-      rating: 4.3,
-      views: 1200,
-      categories: ['Básicas'],
-      isPremium: true,
-      price: 12,
-    },
-    {
-      title: 'Postre Fresa',
-      author: 'Por: Fernando Teran',
-      rating: 4.9,
-      views: 4200,
-      categories: ['Básicas'],
-    },
-    {
-      title: 'Glaseado Chocolate',
-      author: 'Por: Fernando Teran',
-      rating: 5.0,
-      views: 3200,
-      categories: ['Básicas'],
-    },
-    {
-      title: 'Azerbaiyán',
-      author: 'Por: Fernando Teran',
-      rating: 4.1,
-      views: 5000,
-      categories: ['Básicas'],
-    },
-    {
-      title: 'Torta Chocolate',
-      author: 'Por: Fernando Teran',
-      rating: 4.0,
-      views: 12000,
-      categories: ['Básicas'],
-    },
-  ];
+export default React.forwardRef<View, ViewProps>((props, ref) => {
+  return (
+    <Root {...props} ref={ref}>
+      <EntriesContent />
+    </Root>
+  );
+});
 
-  const onOpen = useCallback(() => setActiveEntry(true), []);
-  const onClose = useCallback(() => setActiveEntry(false), []);
+const EntriesContent = React.memo(() => {
+  const dispatch = useAppDispatch();
+  const category = useAppSelector((state) => state.recipe.openedRecipeCategory);
 
   return (
     <>
@@ -89,40 +47,106 @@ export default function Entries() {
       </SearchContainer>
       <PiwiPaper>
         <SortButtons>
-          <SortButton active variant="contained" color="secondary">
+          <SortButton
+            active={category === 'basics'}
+            variant="contained"
+            color="secondary"
+            onPress={() => {
+              dispatch(openedRecipeCategory('basics'));
+              dispatch(openedRecipe(null));
+            }}
+          >
             Básicas
           </SortButton>
           <View style={{ padding: 5 }} />
-          <SortButton variant="contained" color="secondary">
+          <SortButton
+            active={category === 'classics'}
+            variant="contained"
+            color="secondary"
+            onPress={() => {
+              dispatch(openedRecipeCategory('classics'));
+              dispatch(openedRecipe(null));
+            }}
+          >
             Clásicas
           </SortButton>
           <View style={{ padding: 5 }} />
-          <SortButton variant="contained" color="secondary">
-            Gourmet
+          <SortButton
+            active={category === 'gourmet'}
+            variant="contained"
+            color="secondary"
+            onPress={() => {
+              dispatch(openedRecipeCategory('gourmet'));
+              dispatch(openedRecipe(null));
+            }}
+          >
+            Modernas
           </SortButton>
         </SortButtons>
-        {assets && (
-          <>
-            <View style={{ padding: 6 }} />
-            <ScrollView overScrollMode="never">
-              {data.map((entry, index) => (
-                <Entry
-                  {...entry}
-                  key={_.snakeCase(entry.title)}
-                  image={{ uri: assets[index].uri }}
-                  index={index}
-                  onOpen={onOpen}
-                  onClose={onClose}
-                />
-              ))}
-            </ScrollView>
-            <View style={{ paddingTop: 10 }} />
-          </>
-        )}
+        <View style={{ padding: 6 }} />
+        <RecipesFlatList category={category} />
+        <View style={{ paddingTop: 10 }} />
       </PiwiPaper>
     </>
   );
-}
+}, _.isEqual);
+
+const RecipesFlatList = React.memo(
+  ({ category }: { category: Category['slug'] }) => {
+    const collections = usePage().props as unknown as {
+      basics: Recipe[];
+      classics: Recipe[];
+      gourmet: Recipe[];
+    };
+    const dispatch = useAppDispatch();
+    const onOpen = useCallback(
+      (index: number) => dispatch(openedRecipe(index)),
+      [],
+    );
+    const onClose = useCallback(() => dispatch(openedRecipe(null)), []);
+    const renderItem = useCallback<ListRenderItem<number>>(
+      ({ item, index }) => (
+        <Entry
+          key={`entry-id-${item}`}
+          index={index}
+          onOpen={onOpen}
+          onClose={onClose}
+        />
+      ),
+      [],
+    );
+    const keyExtractor = useCallback((id: number) => `${id}`, []);
+    const getItemLayout = useCallback(
+      (data: ArrayLike<number> | null | undefined, index: number) => {
+        return {
+          length: ENTRY_HEIGHT,
+          offset: ENTRY_HEIGHT * index,
+          index,
+        };
+      },
+      [],
+    );
+
+    return (
+      <FlatList
+        keyboardShouldPersistTaps="always"
+        initialNumToRender={5}
+        maxToRenderPerBatch={10}
+        data={collections[category].map((recipe) => recipe.id as number)}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        extraData={collections[category].length}
+        getItemLayout={getItemLayout}
+      />
+    );
+  },
+  _.isEqual,
+);
+
+const Root = styled.View({
+  flex: 1,
+  width: '100%',
+});
 
 const SearchContainer = styled.View(({ theme }) => ({
   alignItems: 'center',
@@ -152,6 +176,7 @@ const SortButtons = styled.View(({ theme }) => ({
 
 const SortButton = styled(Button)<{ active?: boolean }>(
   ({ theme, active = false }) => ({
+    borderRadius: 20,
     ...(!active && {
       backgroundColor: `${theme.palette.secondary.main}CC`,
       color: theme.palette.grey['300'],
