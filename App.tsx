@@ -14,6 +14,7 @@ import { SERVER } from './src/Vars';
 
 const routes = ['/'];
 
+// i love vermilio!!!!
 export default function App() {
   return createInertiaApp({
     server: `${SERVER}`,
