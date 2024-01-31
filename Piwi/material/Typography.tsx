@@ -23,6 +23,8 @@ const PiwiText = styled.Text<TypographyProps>(
     textAlign: align,
     color: (() => {
       switch (color) {
+        case 'white':
+          return theme.palette.common.white;
         case undefined:
         case 'textPrimary':
           return theme.palette.text.primary;
@@ -42,6 +44,7 @@ const PiwiText = styled.Text<TypographyProps>(
 export interface TypographyProps extends TextProps {
   variant?: keyof Theme['typography'];
   color?:
+    | 'white'
     | 'primary'
     | 'secondary'
     | 'error'

@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import _ from 'lodash';
-import { View, Image } from 'react-native';
+import { View, Image, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import RenderHtml from 'react-native-render-html';
 import { usePage } from '../../../lib/Inertia';
@@ -9,6 +9,7 @@ import { Recipe } from '../../../store/recipe';
 import Typography from '../../../Piwi/material/Typography';
 import { SERVER } from '../../../src/Vars';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default React.memo(() => {
   const openedRecipe = useAppSelector((state) => state.recipe.openedRecipe);
   const openedRecipeCategory = useAppSelector(
@@ -36,12 +37,9 @@ export default React.memo(() => {
         }}
       />
       <View style={{ padding: 12 }} />
-      <Typography variant="subtitle1" fontWeight="bold" align="center">
-        Setup of "{recipe.name}"
-      </Typography>
-      <View style={{ padding: 8 }} />
+
       <View style={{ paddingLeft: 10, paddingRight: 10 }}>
-        <RenderHtml source={html} />
+        <RenderHtml source={html} contentWidth={SCREEN_WIDTH} />
       </View>
     </>
   );

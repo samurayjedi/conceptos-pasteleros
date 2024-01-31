@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import _ from 'lodash';
+import { Dimensions } from 'react-native';
 import RenderHtml from 'react-native-render-html';
 import { useAppSelector } from '../../../src/hooks';
 import { Preparation } from '../../../store/recipe';
@@ -10,13 +11,24 @@ import TableRow from '../../../Piwi/material/TableRow';
 import TableCell from '../../../Piwi/material/TableCell';
 import TableBody from '../../../Piwi/material/TableBody';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function PreparationTable({
   preparation,
+  originalRecipeWeight,
 }: PreparationTableProps) {
   const n = useAppSelector(
     useCallback((state) => state.recipe.preparations, []),
   );
-  const totalWeight = (() => {
+  const recipeWeight = useAppSelector(
+    useCallback((state) => state.recipe.weight, []),
+  );
+  const instructionsHtml = useMemo(
+    () => ({
+      html: preparation.instructions,
+    }),
+    [],
+  );
+  const originalWeight = (() => {
     let total = 0;
     preparation.ingredients.forEach((ingredient) => {
       total += parseInt(ingredient.weight, 10);
@@ -24,13 +36,8 @@ export default function PreparationTable({
 
     return total * n;
   })();
-  let totalPercentaje = 0;
-  const instructionsHtml = useMemo(
-    () => ({
-      html: preparation.instructions,
-    }),
-    [],
-  );
+  const originalWeightInPercent = (originalWeight / originalRecipeWeight) * 100;
+  const newWeight = (recipeWeight * originalWeightInPercent) / 100;
 
   return (
     <>
@@ -57,8 +64,7 @@ export default function PreparationTable({
         <TableBody>
           {preparation.ingredients.map((ingredient) => {
             const thisPercentaje =
-              ((parseInt(ingredient.weight) * n) / totalWeight) * 100;
-            totalPercentaje += thisPercentaje;
+              ((parseInt(ingredient.weight) * n) / originalWeight) * 100;
 
             return (
               <TableRow
@@ -69,7 +75,7 @@ export default function PreparationTable({
                 </TableCell>
                 <TableCell align="center">
                   <Typography variant="subtitle2">
-                    {parseInt(ingredient.weight, 10) * n} gr
+                    {(((newWeight * thisPercentaje) / 100) * n).toFixed(0)} gr
                   </Typography>
                 </TableCell>
                 <TableCell align="center">
@@ -87,22 +93,10 @@ export default function PreparationTable({
               </Typography>
             </TableCell>
             <TableCell align="center">
-              <Typography variant="subtitle2">{totalWeight} gr</Typography>
+              <Typography variant="subtitle2">{originalWeight} gr</Typography>
             </TableCell>
             <TableCell align="center">
-              <Typography variant="subtitle2">
-                {totalPercentaje.toFixed(0)}%
-              </Typography>
-            </TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell>
-              <Typography variant="subtitle2" fontWeight="bold">
-                Weight per unit:
-              </Typography>
-            </TableCell>
-            <TableCell align="right">
-              <Typography variant="subtitle2">{totalWeight / n} gr</Typography>
+              <Typography variant="subtitle2">100%</Typography>
             </TableCell>
           </TableRow>
         </TableBody>
@@ -120,7 +114,10 @@ export default function PreparationTable({
         <TableBody>
           <TableRow>
             <TableCell>
-              <RenderHtml source={instructionsHtml} />
+              <RenderHtml
+                source={instructionsHtml}
+                contentWidth={SCREEN_WIDTH}
+              />
             </TableCell>
           </TableRow>
         </TableBody>
@@ -131,4 +128,5 @@ export default function PreparationTable({
 
 interface PreparationTableProps {
   preparation: Preparation;
+  originalRecipeWeight: number;
 }

@@ -23,15 +23,24 @@ export default React.memo(() => {
     gourmet: Recipe[];
   };
   const recipe = collections[openedRecipeCategory][openedRecipe || 0];
-  if (!recipe) {
-    throw new Error(`[${openedRecipeCategory}][${openedRecipe}] not found`);
-  }
-
   const [index, setIndex] = useState(0);
+  const recipeWeight = (() => {
+    let total = 0;
+
+    recipe.preparations.forEach((p) => {
+      p.ingredients.forEach((i) => {
+        total += parseInt(i.weight, 10);
+      });
+    });
+
+    return total;
+  })();
+
   const onPrev = useCallback(
     () => setIndex((prev) => (prev > 0 ? prev - 1 : prev)),
     [],
   );
+
   const onNext = useCallback(
     () =>
       setIndex((prev) =>
@@ -55,7 +64,9 @@ export default React.memo(() => {
           borderTopRightRadius: 20,
         }}
       >
-        {recipe.preparations[index].name}
+        {index === recipe.preparations.length
+          ? 'How to prepare it'
+          : recipe.preparations[index].name}
       </Typography>
       <PagerContainer>
         <Typography variant="subtitle1" color="primary">
@@ -76,7 +87,10 @@ export default React.memo(() => {
         {index === recipe.preparations.length ? (
           <RecipeSetup />
         ) : (
-          <PreparationTable preparation={recipe.preparations[index]} />
+          <PreparationTable
+            preparation={recipe.preparations[index]}
+            originalRecipeWeight={recipeWeight}
+          />
         )}
       </ScrollView>
     </Card>

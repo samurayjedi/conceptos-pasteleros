@@ -2,6 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 
 const initialState: RecipeState = {
   preparations: 1,
+  weight: 0,
   openedRecipe: null,
   openedRecipeCategory: 'basics',
 };
@@ -15,6 +16,12 @@ export const recipeSlice = createSlice({
       action: PayloadAction<RecipeState['preparations']>,
     ) => {
       state.preparations = action.payload;
+    },
+    changeWeightToPrepare: (
+      state,
+      action: PayloadAction<RecipeState['weight']>,
+    ) => {
+      state.weight = action.payload;
     },
     openedRecipe: (
       state,
@@ -31,13 +38,18 @@ export const recipeSlice = createSlice({
   },
 });
 
-export const { changePreparationsToMake, openedRecipe, openedRecipeCategory } =
-  recipeSlice.actions;
+export const {
+  changePreparationsToMake,
+  changeWeightToPrepare,
+  openedRecipe,
+  openedRecipeCategory,
+} = recipeSlice.actions;
 
 export default recipeSlice.reducer;
 
 export interface RecipeState {
   preparations: number;
+  weight: number;
   openedRecipe: number | null;
   openedRecipeCategory: Category['slug'];
 }

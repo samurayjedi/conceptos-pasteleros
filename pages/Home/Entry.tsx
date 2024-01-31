@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import _ from 'lodash';
-import { Category, Recipe } from '../../store/recipe';
+import { Recipe } from '../../store/recipe';
 import { usePage } from '../../lib/Inertia';
 import { Image, View } from 'react-native';
 import { useTheme } from '@emotion/react';
@@ -13,7 +13,8 @@ import { CtxLayout } from '../../App';
 import Crown from '../../Piwi/icons/crown';
 import IconButton from '../../Piwi/material/IconButton';
 import RecipeAppBar from './Recipe/RecipeAppBar';
-import { useAppSelector } from '../../src/hooks';
+import { useAppSelector, useAppDispatch } from '../../src/hooks';
+import { changeWeightToPrepare } from '../../store/recipe';
 import { SERVER } from '../../src/Vars';
 
 export const ENTRY_HEIGHT = 90;
@@ -24,6 +25,7 @@ export default React.memo(
     onOpen = () => {},
     onClose = () => {},
   }: EntryProps) => {
+    const dispatch = useAppDispatch();
     const category = useAppSelector(
       (state) => state.recipe.openedRecipeCategory,
     );
@@ -81,6 +83,13 @@ export default React.memo(
             <View style={{ flex: 1 }} />
             <IconButton
               onPressIn={() => {
+                let total = 0;
+                recipe.preparations.forEach((p) => {
+                  p.ingredients.forEach((i) => {
+                    total += parseInt(i.weight, 10);
+                  });
+                });
+                dispatch(changeWeightToPrepare(total));
                 setBackground(theme.palette.secondary.main);
                 setAppBar({
                   el: RecipeAppBar,
