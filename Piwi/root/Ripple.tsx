@@ -87,9 +87,9 @@ const Ripple = React.memo(({ size, x, y, onRest, ...props }: RippleProps) => {
   const ripple = useSpring({
     o: active ? theme.palette.ripple.opacity : 0,
     size: active ? (nextRipple ? sizeDependingPos : size) : 0,
-    onChange: (fuckAnimation) => {
-      const fuckProps = fuckAnimation.value;
-      if (fuckProps.size > size - 10) {
+    onChange: (anim) => {
+      const piwiProps = anim.value;
+      if (piwiProps.size > size - 10) {
         setNextRipple(true);
       }
     },

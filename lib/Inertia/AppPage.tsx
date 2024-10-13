@@ -11,7 +11,7 @@ export default function ({ resolve }: { resolve: InertiaPageResolver }) {
   const path = useLocation().pathname;
   const listenerId = useMemo(() => uniqueId('inertia-listener-'), []);
   const navigate = useNavigate();
-  // fuck request perform in every render, thats why i used useMemo
+  // request perform in every render, thats why i used useMemo
   const [page, setPage] = useState(
     useMemo(() => InertiaRequest.instance().sendInSuspense().read(), []),
   );
@@ -33,16 +33,16 @@ export default function ({ resolve }: { resolve: InertiaPageResolver }) {
         setStatus(InertiaRequest.instance().theState());
       })
       .addListener('onSuccess', listenerId, (p) => {
-        const fuckPage = p as InertiaPage;
-        navigate(fuckPage.url);
-        setPage(fuckPage);
+        const page = p as InertiaPage;
+        navigate(page.url);
+        setPage(page);
       })
       .addListener('onError', listenerId, (_) => {
-        const fuckErrors = _ as InertiaError;
+        const errors = _ as InertiaError;
         setPage((p) => {
-          const fuckPage = cloneDeep(p);
-          fuckPage.props.errors = fuckErrors.errors;
-          return fuckPage;
+          const page = cloneDeep(p);
+          page.props.errors = errors.errors;
+          return page;
         });
       })
       .addListener('onFinish', listenerId, () => {

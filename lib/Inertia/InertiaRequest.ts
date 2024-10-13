@@ -262,7 +262,7 @@ export default class InertiaRequest {
             if (this.response) {
               return this.response;
             }
-            throw new Error('Fuck response is null');
+            throw new Error('response is null');
           case 'error':
             throw this.error;
           default:

@@ -14,7 +14,6 @@ import { SERVER } from './src/Vars';
 
 const routes = ['/'];
 
-// i love vermilio!!!!
 export default function App() {
   return createInertiaApp({
     server: `${SERVER}`,
@@ -28,7 +27,7 @@ export default function App() {
         }
         return Component;
       }
-      throw new Error(`Fuck ${name} page no found!!!`);
+      throw new Error(`The Page ${name} page no found!!!`);
     },
     setup: ({ App, props }) => (
       <Provider store={store}>
